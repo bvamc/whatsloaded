@@ -1,4 +1,4 @@
-# ctxplain (formerly "AgentScope"): Product and Technical Blueprint
+# whatsloaded (formerly "AgentScope"): Product and Technical Blueprint
 
 > Status: planning draft v1 · Date: 2026-11-05 · Audience: the engineer who will build v0.1
 
@@ -6,15 +6,15 @@
 
 ## 0. Read This First: Three Assumptions I Am Challenging
 
-1. **"Discover, manage, sync" is not new.** Loadout (Tauri desktop app, about 10 agents) already scans global and project configs, manages MCPs, skills, rules, hooks, subagents and plugins, syncs across tools, and estimates context budget. gaal, rulesync, ruler and AIM all handle cross-tool sync. If ctxplain starts as "another manager", it will be the fifth one, and late.
+1. **"Discover, manage, sync" is not new.** Loadout (Tauri desktop app, about 10 agents) already scans global and project configs, manages MCPs, skills, rules, hooks, subagents and plugins, syncs across tools, and estimates context budget. gaal, rulesync, ruler and AIM all handle cross-tool sync. If whatsloaded starts as "another manager", it will be the fifth one, and late.
 2. **Some of the features you proposed can't be built as described.**
-   - *Start/stop/restart MCP servers.* A stdio MCP server is a child process of the agent. ctxplain can't attach to it, restart it, or read its status. ctxplain can only start **its own test instance**. → Rename this to "Probe" and drop lifecycle control.
-   - *Live connection status of an agent's MCP servers.* Agents don't expose this. ctxplain can only report the result of its own probe, plus log files where an agent writes them.
+   - *Start/stop/restart MCP servers.* A stdio MCP server is a child process of the agent. whatsloaded can't attach to it, restart it, or read its status. whatsloaded can only start **its own test instance**. → Rename this to "Probe" and drop lifecycle control.
+   - *Live connection status of an agent's MCP servers.* Agents don't expose this. whatsloaded can only report the result of its own probe, plus log files where an agent writes them.
    - *Discover running agent sessions.* Process listing tells you that `claude` is running with some PID, and little more. The useful signal is in **session transcripts on disk** (Claude Code, Codex, Gemini CLI). Cursor keeps sessions in an internal SQLite store, which is fragile to read and should be out of scope.
-   - *"Which skills are loaded."* Skills use progressive disclosure: only name and description sit in context until the agent invokes a skill. ctxplain can say which skills are **eligible** (from config) and which were **invoked** (from transcripts). It can't say which are "loaded" in any stronger sense.
-3. **The name "AgentScope" is taken** by Alibaba's `agentscope-ai/agentscope` multi-agent framework. **Resolved: the project is named `ctxplain`** ("context" + "explain"). The name was free on npm and GitHub when checked on 2026-11-05.
+   - *"Which skills are loaded."* Skills use progressive disclosure: only name and description sit in context until the agent invokes a skill. whatsloaded can say which skills are **eligible** (from config) and which were **invoked** (from transcripts). It can't say which are "loaded" in any stronger sense.
+3. **The name "AgentScope" is taken** by Alibaba's `agentscope-ai/agentscope` multi-agent framework. **Resolved: the project is named `whatsloaded`.** The name is the question the tool answers, it is easy to say aloud, and it was free on npm and GitHub when checked on 2026-11-05.
 
-**What ctxplain should own (the thesis):**
+**What whatsloaded should own (the thesis):**
 
 > **An explainer for effective agent context.** Given *(agent, directory)*, show exactly which instructions, skills, MCP servers, hooks and settings apply, where each one came from, what it overrides or is overridden by, what's broken, and how confident we are in each claim.
 
@@ -29,7 +29,7 @@ Compare `git config --show-origin`, `terraform plan`, and `brew doctor`, applied
 - **Core commands:** `scan` (inventory), `explain` (effective context in a directory), `doctor` (findings with exit codes), `mcp probe`, `snapshot` / `restore`, and later `sessions`.
 - **Wedge:** Correct precedence models per agent, provenance for every item, and an honest capability matrix: each fact is labelled *documented*, *verified*, *inferred* or *unobservable*.
 - **Explicitly not:** a sync engine, a skills marketplace, an MCP gateway, a token-cost tracker, a security scanner, or an agent runner.
-- **Stack:** TypeScript on Node ≥ 22, a single npm package (`npx ctxplain`), Hono local server, React + Vite UI, official MCP TypeScript SDK. No database in v0.1.
+- **Stack:** TypeScript on Node ≥ 22, a single npm package (`npx whatsloaded`), Hono local server, React + Vite UI, official MCP TypeScript SDK. No database in v0.1.
 - **MVP:** About 10–12 weeks for one senior engineer. Providers: Claude Code (deep), Codex CLI, Gemini CLI, Cursor (read-only, partial).
 
 ---
@@ -54,10 +54,10 @@ Compare `git config --show-origin`, `terraform plan`, and `brew doctor`, applied
 
 ### 2.3 Validation before building (M0, 1 week)
 
-1. Ship a ~300-line throwaway script: `npx ctxplain-proto explain` for **Claude Code only**. It prints effective memory files, skills, subagents and MCP servers with sources and shadowing.
+1. Ship a ~300-line throwaway script: `npx whatsloaded-proto explain` for **Claude Code only**. It prints effective memory files, skills, subagents and MCP servers with sources and shadowing.
 2. Post it with a screenshot to r/ClaudeAI, r/ChatGPTCoding, and the Claude Code / Codex Discords and GitHub discussions.
 3. **Go signal:** ≥ 30 people report "found something I didn't know" (e.g. a forgotten ancestor `CLAUDE.md`, a shadowed server, truncation), or ≥ 5 issues/PRs requesting other agents.
-4. **No-go signal:** responses are mostly "Loadout already shows this". In that case, pivot to shipping the resolver as a **library** (`@ctxplain/core`) and contributing it upstream to Loadout or gaal.
+4. **No-go signal:** responses are mostly "Loadout already shows this". In that case, pivot to shipping the resolver as a **library** (`@whatsloaded/core`) and contributing it upstream to Loadout or gaal.
 
 ---
 
@@ -65,7 +65,7 @@ Compare `git config --show-origin`, `terraform plan`, and `brew doctor`, applied
 
 ### 3.1 Survey
 
-| Project | Form | What it does well | Overlap with ctxplain | Gap / why it doesn't own our wedge |
+| Project | Form | What it does well | Overlap with whatsloaded | Gap / why it doesn't own our wedge |
 |---|---|---|---|---|
 | **MCP Inspector** (official, v2) | Web UI + TUI + CLI (`--cli`), `npx` | Deep protocol debugging of **one** server: tools, resources, prompts, OAuth, JSON output, exit codes | MCP probing | Doesn't know about agent configs. You pass it a command manually. → **Reuse it:** our "Open in Inspector" hands off a server definition. |
 | **MCPJam Inspector** | Web app, `npx` | LLM playground, multi-model comparison, JSON-RPC tracing, OAuth debugger, MCP Apps widgets | MCP probing | Server-author focused, not environment focused. Don't compete. |
@@ -76,21 +76,21 @@ Compare `git config --show-origin`, `terraform plan`, and `brew doctor`, applied
 | **AgentSpec** (Oracle `agent-spec` and others) | Spec + SDKs | Portable declarative agent definitions for frameworks | **None.** Different problem (building agents, not configuring coding agents). | Not a competitor. Drop it from the comparison. |
 | **Snyk Agent Scan** (ex `mcp-scan`) | Python CLI | Auto-discovers MCP configs and skills, spawns servers, detects tool poisoning and prompt injection. Requires a Snyk token and cloud analysis. | Discovery, MCP spawn | Security only, cloud dependent. → **Don't build a security scanner.** Link to it. |
 | **ccusage**, **claude-code-viewer**, CCUsageX | CLI / web | Token and cost analytics, transcript browsing for Claude Code (ccusage also covers Codex) | Session observability | Already good. → **Don't build cost tracking.** Session views should focus on *config-relevant* signals (skills invoked, MCP tool failures). |
-| **Docker MCP Toolkit / Gateway** | Desktop + gateway | Containerized MCP catalog, profiles, a gateway proxy that manages lifecycle | MCP management | It is the right answer for MCP lifecycle control. ctxplain should detect gateway usage, not replicate it. |
+| **Docker MCP Toolkit / Gateway** | Desktop + gateway | Containerized MCP catalog, profiles, a gateway proxy that manages lifecycle | MCP management | It is the right answer for MCP lifecycle control. whatsloaded should detect gateway usage, not replicate it. |
 | **Native agent commands** | `claude mcp list`, `/memory`, `/context`, `/mcp`, Gemini `/memory show`, `/mcp` | Ground truth inside a live session | Explain, MCP status | One agent at a time, inside a session, no shadowing analysis, no cross-agent view. **Design our output to match theirs, and test against them.** |
-| **OTel exporters** (Claude Code, Codex, Gemini CLI) | Built-in | Structured metrics, events and traces | Observability | Requires the user to opt in and run a collector. P2: ctxplain as a tiny local OTLP receiver. |
+| **OTel exporters** (Claude Code, Codex, Gemini CLI) | Built-in | Structured metrics, events and traces | Observability | Requires the user to opt in and run a collector. P2: whatsloaded as a tiny local OTLP receiver. |
 
 ### 3.2 Differentiation (what nobody does well)
 
 1. **Per-agent precedence resolution** as versioned, tested code: memory/instruction hierarchy, settings layering, name-conflict rules for skills, subagents, commands and MCP.
 2. **Provenance and confidence for every item.** "Loaded because `~/work/CLAUDE.md` is an ancestor of cwd (documented: Claude Code memory docs, verified 2026-10)."
-3. **Diagnostics with stable IDs and exit codes**, usable in CI and pre-commit (`ctxplain doctor --ci`). For example, fail a PR that adds a broken `@import` or a `.mcp.json` server whose command doesn't exist.
+3. **Diagnostics with stable IDs and exit codes**, usable in CI and pre-commit (`whatsloaded doctor --ci`). For example, fail a PR that adds a broken `@import` or a `.mcp.json` server whose command doesn't exist.
 4. **Snapshot/rollback journal for global agent config**, which is otherwise unversioned.
 5. **Empirical verification ("canary probes")**, P2 and opt-in. Plant unique canary strings in candidate files, run the agent headless (`claude -p`, `codex exec`, `gemini -p`) in a temp directory, and record which canaries it reports. This turns *inferred* precedence into *verified* precedence. No competitor does this.
 
 ### 3.3 Positioning statement
 
-> **ctxplain explains what your AI coding agents actually see in this directory, and why.**
+> **whatsloaded explains what your AI coding agents actually see in this directory, and why.**
 > It doesn't sync, generate or host anything. It reads, diagnoses, and, only when you confirm, makes reversible changes.
 
 Complementary to: MCP Inspector (deep server debugging), gaal/rulesync (sync), Snyk Agent Scan (security), ccusage (cost). Link to each of them from the relevant screen.
@@ -111,7 +111,7 @@ Complementary to: MCP Inspector (deep server debugging), gaal/rulesync (sync), S
 
 ### 4.2 Primary use cases (ranked)
 
-1. **Explain.** `cd repo && ctxplain explain --agent claude` → effective context with sources and overrides.
+1. **Explain.** `cd repo && whatsloaded explain --agent claude` → effective context with sources and overrides.
 2. **Doctor.** Find broken, duplicate, shadowed, oversized and unapproved items across all agents and projects.
 3. **Probe an MCP server** exactly as an agent would launch it (command, args, env, cwd), list its tools, and see stderr when it fails.
 4. **Safe change.** Disable a skill, move a skill between scopes, or toggle a project MCP, with a preview diff, snapshot and one-command undo.
@@ -128,7 +128,7 @@ Legend: **P0** = v0.1 must have · **P1** = v0.2 · **P2** = later or if validat
 | D1 | Detect installed agents via config dirs, binaries on `PATH`, and app bundles. Report version where cheap (`claude --version`, etc., with a 2 s timeout). | P0 |
 | D2 | Discover global scope artifacts per provider (instructions, skills, subagents, commands, MCP, hooks, settings, plugins/extensions). | P0 |
 | D3 | Discover project scope for a given directory: walk up to the git root (and beyond where the agent does), and down where the agent does. | P0 |
-| D4 | Project registry: projects come from explicit `ctxplain add <dir>`, the cwd, and **agent-known projects** (keys of `~/.claude.json` `projects`, Codex trusted projects, transcript dirs). **No full-disk crawl.** | P0 |
+| D4 | Project registry: projects come from explicit `whatsloaded add <dir>`, the cwd, and **agent-known projects** (keys of `~/.claude.json` `projects`, Codex trusted projects, transcript dirs). **No full-disk crawl.** | P0 |
 | D5 | Managed/enterprise policy files: detect and display as read-only top-precedence layers. | P1 |
 | D6 | Plugin/extension expansion: Claude Code plugins, Gemini extensions contributing skills, commands and MCP. | P1 |
 | D7 | Watch mode (fs events) for live UI refresh. | P1 |
@@ -144,7 +144,7 @@ Legend: **P0** = v0.1 must have · **P1** = v0.2 · **P2** = later or if validat
 | I5 | Validation: parse errors (JSON/JSONC/TOML/YAML frontmatter), schema problems (missing `name`/`description`, invalid MCP entry), broken `@imports`, symlink loops, missing commands, unset env refs. | P0 |
 | I6 | Confidence label on every precedence claim: `documented` · `verified` · `inferred` · `unobservable`. | P0 |
 | I7 | Cross-agent matrix: for one directory, which agents see which instruction files and skills (e.g. `AGENTS.md` is read by Codex and Cursor, but by Claude Code only via `@AGENTS.md` import). | P1 |
-| I8 | Canary verification (`ctxplain verify`). Opt-in, costs tokens, needs agent auth. | P2 |
+| I8 | Canary verification (`whatsloaded verify`). Opt-in, costs tokens, needs agent auth. | P2 |
 | ✗ | Semantic conflict detection between instructions ("file A says tabs, file B says spaces"). Needs an LLM, is unreliable, and conflicts with local-first and no-account. Revisit only as an optional BYO-model plugin. | ✗ |
 
 #### C. Configuration management
@@ -182,7 +182,7 @@ What can actually be observed:
 
 | Agent | Passive source (no setup) | Opt-in source | Unobservable |
 |---|---|---|---|
-| Claude Code | JSONL transcripts in `~/.claude/projects/<encoded-path>/*.jsonl` (messages, tool_use / tool_result, timestamps, token usage, Skill tool invocations, subagent sidechains) | Hooks (`PreToolUse`, `PostToolUse`, `SessionStart`, `Stop`…) writing to an ctxplain spool; native OTel | The exact assembled system prompt, live MCP connection state |
+| Claude Code | JSONL transcripts in `~/.claude/projects/<encoded-path>/*.jsonl` (messages, tool_use / tool_result, timestamps, token usage, Skill tool invocations, subagent sidechains) | Hooks (`PreToolUse`, `PostToolUse`, `SessionStart`, `Stop`…) writing to an whatsloaded spool; native OTel | The exact assembled system prompt, live MCP connection state |
 | Codex CLI | Rollout JSONL in `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` | `[otel]` in `config.toml` | Same as above |
 | Gemini CLI | Checkpoints/logs under `~/.gemini/tmp/<project-hash>/` (*format less stable, verify*) | Telemetry to a local file (`telemetry.outfile`) or OTLP | Same |
 | Cursor | Internal SQLite (`state.vscdb`), undocumented | None stable | **Treat as unsupported** |
@@ -193,13 +193,13 @@ What can actually be observed:
 | O2 | Session detail: timeline of tool calls with duration (tool_use → tool_result timestamps), error flag, MCP server/tool attribution, skills invoked, subagents spawned. | P1 |
 | O3 | Aggregates per project: top failing MCP tools, p50/p95 tool latency, skills never invoked in 30 days ("dead skills"). | P1. "Dead skills" is the most config-relevant insight. |
 | O4 | Running sessions: detect agent processes and map cwd → project (`ps` + `lsof -p` on macOS / `/proc/<pid>/cwd` on Linux). Show as "active". | P2 |
-| O5 | Local OTLP/HTTP receiver (`ctxplain otel`) on `127.0.0.1:4318`, stored in SQLite. | P2 |
+| O5 | Local OTLP/HTTP receiver (`whatsloaded otel`) on `127.0.0.1:4318`, stored in SQLite. | P2 |
 | O6 | Optional hook installer (Claude Code) to capture `SessionStart` payloads: the reliable "what was active at session start" signal. A ChangeSet like any other write. | P2 |
 | ✗ | Token / cost analytics (ccusage owns this), transcript full-text search UI, replay or resume sessions. | ✗ |
 
 ### 4.4 Global non-functional requirements
 
-- Read-only by default. `scan`, `explain`, `doctor` and `sessions` never write outside `~/.ctxplain/`.
+- Read-only by default. `scan`, `explain`, `doctor` and `sessions` never write outside `~/.whatsloaded/`.
 - No network access, except (a) MCP HTTP probes the user explicitly triggers and (b) an opt-in update check. **No telemetry.**
 - Cold `explain` for a typical setup in **< 500 ms**. Full `scan` of 30 projects in **< 3 s**.
 - Works when a provider is missing or unsupported: per-provider failures are isolated and shown as findings.
@@ -215,7 +215,7 @@ What can actually be observed:
 |---|---|
 | Providers | **Claude Code** (memory, rules, skills, subagents, commands, MCP across user/project/local scopes, hooks, settings layers, `.mcp.json` approval state). **Codex** (`AGENTS.md`/override chain and size limit, `config.toml` MCP, skills). **Gemini CLI** (`GEMINI.md` hierarchy incl. custom `context.fileName`, settings layers, MCP, extensions listed but not expanded). **Cursor** (`.cursor/rules/*.mdc` with frontmatter, legacy `.cursorrules`, `AGENTS.md`, `~/.cursor/mcp.json` + `.cursor/mcp.json`; User Rules marked *unobservable*). |
 | CLI | `scan`, `explain`, `doctor`, `mcp list`, `mcp probe`, `snapshot`, `restore`, `undo`, `skill disable/enable`, `ui`. Each command takes `--json`. |
-| UI | `ctxplain ui` → localhost. Screens: Overview, Project Explain, Inventory, Issues, MCP, History. |
+| UI | `whatsloaded ui` → localhost. Screens: Overview, Project Explain, Inventory, Issues, MCP, History. |
 | Writes | ChangeSet engine + snapshot + skill disable/enable (+ undo). Nothing else writes. |
 
 ### 5.2 Explicitly out of v0.1
@@ -242,10 +242,10 @@ Session observability (v0.2), scope moves, MCP toggles, HTTP MCP probing, plugin
 - AC11: Probing never runs automatically during `scan` or when the UI loads.
 
 **Writes**
-- AC12: `skill disable foo --agent claude --scope user` prints a plan (move `~/.claude/skills/foo/` → `~/.ctxplain/quarantine/<id>/…`), asks for confirmation, and creates a snapshot before applying. After it runs, `explain` no longer lists `foo` and `history` shows the entry.
+- AC12: `skill disable foo --agent claude --scope user` prints a plan (move `~/.claude/skills/foo/` → `~/.whatsloaded/quarantine/<id>/…`), asks for confirmation, and creates a snapshot before applying. After it runs, `explain` no longer lists `foo` and `history` shows the entry.
 - AC13: `undo` restores byte-identical files, compared by sha256. If a target file changed after the ChangeSet, `undo` refuses and shows a 3-way summary unless `--force` is given.
 - AC14: Killing the process mid-apply leaves either the pre-state or the post-state, never a partial file (temp file + rename; the journal is written before and after).
-- AC15: No command other than the M1 pipeline writes outside `~/.ctxplain/`. A test wraps `fs` and fails on any unexpected write during `scan`, `explain` and `doctor`.
+- AC15: No command other than the M1 pipeline writes outside `~/.whatsloaded/`. A test wraps `fs` and fails on any unexpected write during `scan`, `explain` and `doctor`.
 
 **UI and security**
 - AC16: The server binds only to `127.0.0.1` and requires a per-launch random token (in the URL opened by the CLI and kept in a cookie afterwards). Requests with a foreign `Host` or `Origin` are rejected (DNS-rebinding defense).
@@ -266,7 +266,7 @@ Session observability (v0.2), scope moves, MCP toggles, HTTP MCP probing, plugin
 
 ```
 ┌───────────────┬─────────────────────────────────────────────┐
-│ ctxplain    │  [Project ▾ ~/work/api]   [Agent ▾ Claude]  │
+│ whatsloaded    │  [Project ▾ ~/work/api]   [Agent ▾ Claude]  │
 │               │                                             │
 │ ◉ Overview    │                                             │
 │ ○ Explain     │                                             │
@@ -289,15 +289,15 @@ Two global selectors: **Project** (or "Global only") and **Agent**. Most screens
 | **Inventory** | "Everything, everywhere" | A filterable table of all artifacts across agents and scopes. Columns: kind, name, agent(s), scope, path, hash-group, status. Group-by-name reveals duplicates (identical / diverged). |
 | **Issues** | "What's broken?" | Findings list sorted by severity, filterable by provider and project. Each shows the message, location (click → file preview at the line), fix hint, and a "Copy CLI command" button. |
 | **MCP** | "Do my servers work?" | Servers merged by `(name, definition hash)`, with the agents and scopes where each applies. Static check results. "Probe" button → confirmation modal with the exact command → result panel (capabilities, tools, timing, stderr). "Open in Inspector". |
-| **History** | "What did ctxplain change?" | Journal of ChangeSets and snapshots. Each entry: diff viewer, Undo/Restore with drift warning. |
+| **History** | "What did whatsloaded change?" | Journal of ChangeSets and snapshots. Each entry: diff viewer, Undo/Restore with drift warning. |
 | **Sessions** (v0.2) | "What happened in recent runs?" | Per project: session list → timeline of tool calls (bar = duration, red = error), skills invoked, MCP attribution. A "Dead skills" panel. |
 
 ### 6.4 Key workflows
 
 **W1: "Why is Claude ignoring my rule?"**
-1. `ctxplain explain` in the repo (or UI → Explain).
+1. `whatsloaded explain` in the repo (or UI → Explain).
 2. The user sees that their rule lives in `~/.claude/CLAUDE.md`, and that a `CLAUDE.md` in an ancestor directory, `~/work/CLAUDE.md`, contradicts it. Both are loaded. The order and reason are shown.
-3. Not automated: ctxplain doesn't judge semantic conflicts. It shows both files next to each other with load order. The user edits in their own editor ("Open in $EDITOR").
+3. Not automated: whatsloaded doesn't judge semantic conflicts. It shows both files next to each other with load order. The user edits in their own editor ("Open in $EDITOR").
 
 **W2: "My MCP server isn't working in Cursor but works in Claude."**
 1. MCP screen → filter `postgres`. Two definitions with **different hashes**: Cursor's lacks `DATABASE_URL` in `env`.
@@ -309,7 +309,7 @@ Two global selectors: **Project** (or "Global only") and **Agent**. Most screens
 2. Diff the diverged copy. Disable the stale one → plan dialog → confirm → snapshot → applied. Undo is available in History.
 
 **W4: "Gate agent config in CI."**
-`npx ctxplain doctor --ci --json > report.json` in a GitHub Action. A PR adding `.mcp.json` with a typo'd command fails with `MCP_COMMAND_NOT_FOUND`.
+`npx whatsloaded doctor --ci --json > report.json` in a GitHub Action. A PR adding `.mcp.json` with a typo'd command fails with `MCP_COMMAND_NOT_FOUND`.
 
 ---
 
@@ -320,23 +320,23 @@ Two global selectors: **Project** (or "Global only") and **Agent**. Most screens
 | Decision | Choice | Rationale | Rejected |
 |---|---|---|---|
 | Language | **TypeScript (Node ≥ 22)** | Official MCP TS SDK. Same ecosystem as MCP Inspector, Claude Code and Gemini CLI. `npx` zero-install for the target audience. Mature JSONC (`jsonc-parser`, comment-preserving edits) and YAML (`yaml`, Document API) libraries. One language across CLI, server and UI. | Rust/Tauri (Loadout already occupies that, and it slows iteration), Go (gaal; weaker MCP SDK and UI story), Python (packaging friction) |
-| Form factor | **CLI + embedded localhost web UI** (`ctxplain ui`) | Works headless and in CI. Same model as MCP Inspector. No code signing or notarization in v0.1. | Electron/Tauri desktop app (revisit in v1 only if users ask for a tray app) |
+| Form factor | **CLI + embedded localhost web UI** (`whatsloaded ui`) | Works headless and in CI. Same model as MCP Inspector. No code signing or notarization in v0.1. | Electron/Tauri desktop app (revisit in v1 only if users ask for a tray app) |
 | Server | **Hono** on `@hono/node-server` | Tiny, typed, easy to lock down | Express (heavier, looser), Fastify (fine but more than needed) |
 | UI | **React + Vite + TanStack Query + TanStack Router**, Tailwind + a few Radix primitives, CodeMirror 6 for file preview/diff | Fast to build. Diff/merge views are available through `@codemirror/merge` | Next.js (SSR unnecessary), a component-heavy dashboard kit |
 | CLI | `commander` (or `citty`), `picocolors`, `@clack/prompts` for confirmations | Small and conventional | oclif (overkill) |
 | Parsing | `jsonc-parser`, `smol-toml` (read), `yaml` + `gray-matter`-style frontmatter split, `fast-glob`, `picomatch` | Lenient reads, precise locations | |
 | MCP | `@modelcontextprotocol/sdk` client (`StdioClientTransport`, `StreamableHTTPClientTransport`) | Official, spec-tracking | Hand-rolled JSON-RPC |
-| Storage | **Plain files under `~/.ctxplain/`** (JSON manifests + content-addressed blobs). SQLite (`node:sqlite`, or `better-sqlite3` as fallback) **only from v0.2** for the session index and OTel. | No DB needed to resolve config. Files are small and resolving is cheap | Mandatory DB from day 1 |
-| Packaging | **Single npm package** with the bundled UI (`dist/web`), built with `tsup`. pnpm workspace internally: `core`, `providers`, `cli`, `server`, `web`. Publish `@ctxplain/core` separately once the API is stable (v0.3). | One install, while keeping internal boundaries | Multiple user-facing packages early |
+| Storage | **Plain files under `~/.whatsloaded/`** (JSON manifests + content-addressed blobs). SQLite (`node:sqlite`, or `better-sqlite3` as fallback) **only from v0.2** for the session index and OTel. | No DB needed to resolve config. Files are small and resolving is cheap | Mandatory DB from day 1 |
+| Packaging | **Single npm package** with the bundled UI (`dist/web`), built with `tsup`. pnpm workspace internally: `core`, `providers`, `cli`, `server`, `web`. Publish `@whatsloaded/core` separately once the API is stable (v0.3). | One install, while keeping internal boundaries | Multiple user-facing packages early |
 
 ### 7.2 Component diagram
 
 ```mermaid
 flowchart LR
-  subgraph CLI["ctxplain CLI"]
+  subgraph CLI["whatsloaded CLI"]
     cmds["scan / explain / doctor / mcp / snapshot / undo / ui"]
   end
-  subgraph Core["@ctxplain/core"]
+  subgraph Core["@whatsloaded/core"]
     reg["Provider Registry"]
     disc["Discovery (fs, PATH, versions)"]
     parse["Parsers (JSONC, TOML, YAML-fm, MD imports)"]
@@ -372,7 +372,7 @@ flowchart LR
   mcp -->|"spawn / HTTP"| ext["MCP servers"]
 ```
 
-**Process model:** one Node process. `ctxplain ui` = the same process serving the API and static UI. MCP probes are child processes in their own process group. No daemon in v0.1.
+**Process model:** one Node process. `whatsloaded ui` = the same process serving the API and static UI. MCP probes are child processes in their own process group. No daemon in v0.1.
 
 ### 7.3 Provider / adapter architecture
 
@@ -416,7 +416,7 @@ Design rules:
 ### 7.5 Filesystem discovery
 
 - **Roots:** `$HOME` (respect `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `GEMINI_CLI_HOME`-style overrides where documented), OS managed-policy dirs, and project dirs from the registry.
-- **Project registry** (`~/.ctxplain/projects.json`): explicit adds, plus suggestions from agent-known projects (Claude `~/.claude.json` `projects` keys, Claude transcript dir names decoded, Codex trusted projects). Suggestions require a one-click "track" in the UI. **No crawling `~/` for `.git`.**
+- **Project registry** (`~/.whatsloaded/projects.json`): explicit adds, plus suggestions from agent-known projects (Claude `~/.claude.json` `projects` keys, Claude transcript dir names decoded, Codex trusted projects). Suggestions require a one-click "track" in the UI. **No crawling `~/` for `.git`.**
 - **Walks:** ancestors stop at `/` (Claude) or the git root (Codex/Gemini) per provider rule. Descendants (Gemini, nested CLAUDE.md, Cursor nested rules) are bounded: `maxDirs=200`, skip `node_modules`, `.git`, `dist`, `build`, `.venv`, and honor `.gitignore` via `ignore`.
 - **Symlinks:** resolve with `realpath`. Record both link and target. Detect loops (visited set of `dev:ino`). Flag targets outside `$HOME`/project as `info`.
 - **Robustness:** every read is wrapped. Failure → a `Finding` (`READ_ERROR`, `PARSE_ERROR`) attached to the artifact, never a crash. Files > 1 MiB are hashed but not fully parsed (flagged).
@@ -445,7 +445,7 @@ Normalize every provider into one model:
 ### 7.7 Backup, diff, rollback
 
 ```
-~/.ctxplain/
+~/.whatsloaded/
   config.json
   projects.json
   blobs/sha256/ab/cdef…             # content-addressed, zstd/gzip optional later
@@ -458,7 +458,7 @@ Normalize every provider into one model:
 - **Snapshot** = manifest `{id, createdAt, reason, entries: [{path, sha256, mode, mtime, exists}]}` + blobs. Scope: the explicit file set touched by a ChangeSet (automatic), or "all known agent config files" (manual `snapshot`). Transcripts and caches are excluded. Retention: keep the last 50 automatic snapshots, all manual ones, configurable.
 - **ChangeSet** = `{id, title, ops: Op[], preconditions: [{path, sha256|absent}], snapshotId, status}`. Ops are a small closed set: `writeFile(path, content)`, `jsonEdit(path, jsonPath, value|delete)` (via `jsonc-parser.modify` to preserve comments and formatting), `move(src, dst)`, `mkdir`, `remove(path)` (implemented as a move to quarantine, **never `unlink`**).
 - **Apply algorithm:**
-  1. Take a lock (`~/.ctxplain/locks/apply.lock`, O_EXCL).
+  1. Take a lock (`~/.whatsloaded/locks/apply.lock`, O_EXCL).
   2. Re-check preconditions (optimistic concurrency: the file hash must equal the hash at plan time). If it doesn't match, abort and re-plan.
   3. Write snapshot blobs and a journal entry with `status: applying`.
   4. Execute ops. Each file write goes to a temp file in the same dir, then `fsync`, then `rename`. Keep the original mode.
@@ -476,7 +476,7 @@ Normalize every provider into one model:
 - **Static checks:** `which` against a computed PATH. **Important:** GUI apps (Cursor, Claude Desktop) on macOS don't inherit your shell `PATH`. Run checks with both the shell PATH and a "GUI PATH" (`/usr/bin:/bin:/usr/sbin:/sbin` + `launchctl getenv PATH` where available), and flag "works in terminal agents, likely fails in GUI agents". This is a common real-world failure and a strong diagnostic. Also expand `${VAR}` / `$VAR` per each agent's documented interpolation rules.
 - **Probe lifecycle (stdio):** confirm → `spawn(command, args, {env: mergedEnv, cwd, detached: true})` → SDK `Client.connect(StdioClientTransport)` → `initialize` (timeout 10 s) → `listTools/listResources/listPrompts` (timeout 5 s each, tolerate `MethodNotFound`) → `close` → SIGTERM to the process group → SIGKILL after 2 s. Capture stderr into a ring buffer (64 KiB). Record timings. Never call tools during a probe.
 - **Probe (HTTP), P1:** Streamable HTTP first, fall back to SSE. `401` + `WWW-Authenticate` → status `auth-required`, with a hint pointing to MCP Inspector's OAuth debugger.
-- **Result caching:** `~/.ctxplain/mcp-probes/<defHash>.json` (last result only), shown as "last probed 3 h ago". Never auto-refresh.
+- **Result caching:** `~/.whatsloaded/mcp-probes/<defHash>.json` (last result only), shown as "last probed 3 h ago". Never auto-refresh.
 - **Inspector handoff:** build the command line for `npx @modelcontextprotocol/inspector` with the same command/args/env and show or copy it. Optionally launch it after confirmation.
 
 ### 7.9 Session readers (v0.2)
@@ -571,7 +571,7 @@ interface Finding {
   location?: SourceRef;
   message: string;          // human, specific: includes names/paths
   explanation?: string;     // why it matters for agent behavior
-  fix?: { text: string; command?: string /* ctxplain CLI */ };
+  fix?: { text: string; command?: string /* whatsloaded CLI */ };
   docs?: string;            // URL
 }
 interface Check { id: string; appliesTo: ArtifactKind[] | 'context';
@@ -645,7 +645,7 @@ GET  /api/history                   GET /api/snapshots/:id/diff?against=current|
 | JSON / JSONC | `jsonc-parser` | `jsonc-parser.modify` + `applyEdits` (minimal textual edits, comments kept) | same |
 | YAML frontmatter | `yaml` Document | not written | `yaml` Document API (comment-preserving) |
 | TOML | `smol-toml` | **refused** | Only after a format-preserving editor is validated on a corpus of real `config.toml` files (round-trip byte-identical when unchanged) |
-| Markdown | raw text | not edited (only moved) | never edited by ctxplain. Open in `$EDITOR` |
+| Markdown | raw text | not edited (only moved) | never edited by whatsloaded. Open in `$EDITOR` |
 
 ---
 
@@ -658,9 +658,9 @@ GET  /api/history                   GET /api/snapshots/:id/diff?against=current|
 | **Path traversal via `/api/file`** | Only serve paths that exist in the current discovery result (an allow-list of artifact `source.path` values). Reject everything else. |
 | **Secrets leakage** (MCP env, headers, tokens in args, transcripts) | Redact by default in all outputs: key-name heuristics (`*_TOKEN`, `*_KEY`, `SECRET`, `PASSWORD`, `AUTHORIZATION`) plus value patterns (`sk-…`, `ghp_…`, `xox…`, JWTs, high-entropy strings). Snapshot blobs are stored with mode `0600` under a `0700` dir. Snapshots may contain secrets, so the README says so and `snapshot --exclude-secrets` is a P1 option. |
 | **Silent modification of user config** | Single write path (ChangeSet). Test-enforced read-only for every other command (AC15). No auto-fix. `doctor --fix` is **not** in v0.1. Fixes are separate explicit commands with a plan. |
-| **Destructive ops** | No unlink. `remove` = quarantine. Quarantine is purged only by explicit `ctxplain gc --older-than 30d` with confirmation. |
+| **Destructive ops** | No unlink. `remove` = quarantine. Quarantine is purged only by explicit `whatsloaded gc --older-than 30d` with confirmation. |
 | **Supply chain** | Minimal dependency set. Lockfile. `npm publish --provenance`. No postinstall scripts. Pin the MCP SDK minor version. |
-| **Privacy** | Zero telemetry. No network unless the user triggers an HTTP probe or enables the update check. Transcript parsing (v0.2) stays in-process, and the session index lives in `~/.ctxplain/` with `0600`. |
+| **Privacy** | Zero telemetry. No network unless the user triggers an HTTP probe or enables the update check. Transcript parsing (v0.2) stays in-process, and the session index lives in `~/.whatsloaded/` with `0600`. |
 | **Running agent race conditions** | Precondition hashes, atomic rename, running-process warning, and v0.1 avoids writing `~/.claude.json`. |
 
 ---
@@ -695,7 +695,7 @@ flowchart LR
 | **v0.1** (0.5 wk) | Docs site (README + per-check docs pages), demo GIF, `npx` smoke tests on macOS/Linux CI. | Published. | all above |
 | **M6 Sessions** (2.5 wk) | SQLite index, Claude + Codex readers, session list/detail, failing tools, latency, dead skills. | Parses ≥ 99% of lines in the author's own last 90 days of transcripts. Unknown types counted. | v0.1 |
 | **M7 Mgmt+** (2 wk) | Skill/subagent scope move, Claude/Gemini MCP toggles (first write to `~/.claude.json`, with running-process guard), HTTP probe, plugin/extension expansion, watch mode, snapshot diff UI. | Each new op has plan/undo tests. | v0.1 |
-| **M8** (later) | `verify` canary probes, local OTLP receiver, active-session detection, Windows CI, `@ctxplain/core` public API. | Driven by v0.1/v0.2 feedback. | M6 |
+| **M8** (later) | `verify` canary probes, local OTLP receiver, active-session detection, Windows CI, `@whatsloaded/core` public API. | Driven by v0.1/v0.2 feedback. | M6 |
 
 **Total to v0.1: about 12.5 weeks** including M0, or about 10 if M2 and M4 overlap well. To stay at 10: cut Cursor to read-only rules + MCP only (already planned) and skip Gemini extensions.
 
@@ -720,7 +720,7 @@ flowchart LR
 
 | Risk | Mitigation |
 |---|---|
-| **Loadout adds a precedence/explain engine** and the wedge closes. | Move fast on CLI/CI + correctness, an area a desktop GUI app is less suited to. Publish `@ctxplain/core` so the resolver can become the standard others embed. Losing as an app but winning as a library is an acceptable outcome. |
+| **Loadout adds a precedence/explain engine** and the wedge closes. | Move fast on CLI/CI + correctness, an area a desktop GUI app is less suited to. Publish `@whatsloaded/core` so the resolver can become the standard others embed. Losing as an app but winning as a library is an acceptable outcome. |
 | **Agents ship native "explain" features** (e.g. a richer `/context`, `/memory`). | Cross-agent and cross-project views, plus CI usage, remain outside any single vendor's incentive. Integrate their output where it's machine-readable. |
 | **Scope creep toward a "platform"** (sync, registry, cost, security) | The ✗ items in §4.3 are part of the spec. Add a `NON-GOALS.md` to the repo and point feature requests to the complementary tools. |
 | **Name confusion with Alibaba AgentScope** | Rename before the first public post (M0). |
@@ -764,7 +764,7 @@ flowchart LR
 ## Appendix B: Repository layout
 
 ```
-ctxplain/
+whatsloaded/
   packages/
     core/          # types, discovery utils, parsers, resolver, checks, changes, store, mcp
     providers/     # claude-code/, codex/, gemini-cli/, cursor/, agents-standard/

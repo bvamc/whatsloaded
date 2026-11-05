@@ -1,8 +1,8 @@
-# ctxplain
+# whatsloaded
 
 **See what your AI coding agents actually load, and why.**
 
-`ctxplain` is a local-first, open-source CLI (with an optional localhost UI) that explains, diagnoses, and safely manages the configuration of AI coding agents: Claude Code, Codex CLI, Gemini CLI, and Cursor.
+`whatsloaded` is a local-first, open-source CLI (with an optional localhost UI) that explains, diagnoses, and safely manages the configuration of AI coding agents: Claude Code, Codex CLI, Gemini CLI, and Cursor.
 
 Give it an agent and a directory, and it shows:
 
@@ -13,10 +13,10 @@ Give it an agent and a directory, and it shows:
 - how confident it is (`documented` / `verified` / `inferred` / `unobservable`)
 
 ```bash
-npx ctxplain explain --agent claude   # effective context for this directory
-npx ctxplain doctor                   # findings, CI-friendly exit codes
-npx ctxplain mcp probe github         # start a test instance exactly as the agent would
-npx ctxplain ui                       # localhost UI
+npx whatsloaded explain --agent claude   # effective context for this directory
+npx whatsloaded doctor                   # findings, CI-friendly exit codes
+npx whatsloaded mcp probe github         # start a test instance exactly as the agent would
+npx whatsloaded ui                       # localhost UI
 ```
 
 > [!NOTE]
