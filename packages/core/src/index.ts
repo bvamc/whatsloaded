@@ -12,3 +12,4 @@ export * from "./parse/jsonc.js";
 export * from "./parse/frontmatter.js";
 export * from "./parse/md-imports.js";
 export * from "./parse/toml.js";
+export * from "./resolve/resolver.js";
