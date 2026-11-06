@@ -1,0 +1,19 @@
+{
+  "name": "whatsloaded-monorepo",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "type": "module",
+  "scripts": {
+    "build": "npm run --workspaces --if-present build",
+    "test": "vitest run",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "tsc -b"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "tsup": "^9.0.0",
+    "typescript": "^5.8.2",
+    "vitest": "^5.1.0"
+  }
+}

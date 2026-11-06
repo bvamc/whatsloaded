@@ -1,0 +1,24 @@
+{
+  "name": "whatsloaded",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "whatsloaded": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsup src/index.ts --format esm --watch"
+  },
+  "dependencies": {
+    "@whatsloaded/core": "*",
+    "@whatsloaded/providers": "*",
+    "commander": "^13.1.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsup": "^8.4.0"
+  }
+}
