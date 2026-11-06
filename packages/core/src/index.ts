@@ -4,3 +4,7 @@ export * from "./types.js";
 export * from "./env.js";
 export * from "./fs/readonly-fs.js";
 export * from "./provider.js";
+export * from "./discovery/walk.js";
+export * from "./discovery/symlink.js";
+export * from "./discovery/hash.js";
+export * from "./discovery/cache.js";
