@@ -1,9 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
-export default defineConfig({
-  test: {
-    globals: true,
-    environment: "node",
-    include: ["packages/**/test/**/*.test.ts"],
-  },
-});
+// Separate from vite.config.ts, whose root is web/.
+export default defineConfig({ test: { root: '.', include: ['test/**/*.test.ts'], setupFiles: ['test/setup.ts'] } });
