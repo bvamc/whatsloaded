@@ -1,8 +1,7 @@
 {
   "name": "whatsloaded",
   "version": "0.2.0",
-  "private": true,
-  "description": "See and manage the MCP servers, skills, agents, rules and plugins configured across your AI coding tools, at every scope",
+  "description": "See, measure, diagnose, and safely manage the MCP servers, skills, agents, rules, and plugins loaded across your AI coding tools.",
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -10,9 +9,12 @@
     "codex",
     "kiro",
     "opencode",
-    "skills",
-    "agents",
-    "cli"
+    "ai-agents",
+    "agent-skills",
+    "context-window",
+    "developer-tools",
+    "cli",
+    "tui"
   ],
   "type": "module",
   "bin": {
@@ -87,5 +89,14 @@
     "typescript": "^7.0.2",
     "vite": "^6.2.7",
     "vitest": "^3.1.4"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/bvamc/whatsloaded#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bvamc/whatsloaded.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bvamc/whatsloaded/issues"
   }
 }

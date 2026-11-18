@@ -6,16 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "**",
-      "!!**/dist",
-      "!!**/node_modules",
-      "!package-lock.json",
-      "!docs",
-      "!scripts/bench.mjs",
-      "!scripts/proto",
-      "!scripts/verify"
-    ]
+    "includes": ["**", "!!**/dist", "!!**/node_modules", "!package-lock.json", "!docs/assets"]
   },
   "formatter": {
     "enabled": true,
