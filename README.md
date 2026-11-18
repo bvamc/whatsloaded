@@ -1,163 +1,244 @@
 # whatsloaded
 
-One view of the MCP servers, skills, agents, commands, rules and plugins configured across your AI coding tools (Claude Code, Kiro, Codex, opencode, and the shared `~/.agents` skill store), at every scope, with safe cross-tool management.
+**See, diagnose, and safely manage the MCP servers, skills, agents, rules, and plugins configured across your AI coding tools.**
 
+Works seamlessly across **Claude Code**, **Codex CLI**, **Kiro**, **opencode**, and the shared `~/.agents` skill store.
+
+---
+
+## The Problem
+
+Every AI coding assistant uses its own configuration files and conventions:
+
+- Claude Code uses `~/.claude.json`, `.mcp.json`, and `.claude/`
+- Codex CLI uses `~/.codex/config.toml` and `.codex/`
+- Kiro uses `~/.kiro/settings/mcp.json` and agent definitions
+- opencode uses `opencode.json`
+
+When you work across multiple tools, configuration quickly drifts: you have duplicate MCP server processes, broken symlinks, unused skills consuming thousands of tokens of context window, and no easy way to share setups across tools.
+
+**`whatsloaded` provides one unified dashboard and CLI to see everything, fix issues, and manage configs safely with automatic backups and instant undo.**
+
+---
+
+## ⚡ Quick Start
+
+### 1. Installation
+
+```bash
+git clone https://github.com/bvamc/whatsloaded.git
+cd whatsloaded
+npm install && npm run build && npm link
 ```
-npm install && npm run build && npm link    # puts `whatsloaded` on PATH
+
+_This installs the `whatsloaded` command globally on your system._
+
+### 2. Launch the Web Dashboard
+
+```bash
+whatsloaded ui
 ```
 
-## Look
+Opens an interactive local dashboard at `http://127.0.0.1:4319`.
 
-| command                                                                               | what it does                                                                                                                                                                                 |
-| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `whatsloaded ls [kind]`                                                               | everything, with harness / scope / state (`-a` adds plugin-provided items, `--json`)                                                                                                         |
-| `whatsloaded matrix [kind]`                                                           | name × harness grid: where each MCP server (or skill...) is defined                                                                                                                          |
-| `whatsloaded measure <server>`                                                        | start a server once (after showing the command) to measure what its tool definitions cost in context                                                                                         |
-| `whatsloaded profile save <name> --from <tool> [--used]` / `apply <name> --to <tool>` | save a setup (or only what you used) and switch a tool to it later                                                                                                                           |
-| `whatsloaded where <server>`                                                          | where an MCP server is installed, every configuration of it (yours / from plugins / agent profiles), and which agents use it                                                                 |
-| `whatsloaded show <query>`                                                            | full details, env/headers redacted unless `--reveal`                                                                                                                                         |
-| `whatsloaded doctor`                                                                  | drift between your configurations, commands that are not installed, agents using servers they cannot see, duplicate server processes, shadowing, unshared skills, broken links, parse errors |
-| `whatsloaded tui`                                                                     | interactive browser: toggle, inspect, doctor, undo                                                                                                                                           |
+### 3. Or use the CLI right away
 
-## Web UI
+```bash
+# See everything configured across all your tools
+whatsloaded ls
 
-```
-whatsloaded ui            # opens http://127.0.0.1:4319
-whatsloaded ui --no-open -p 5000
+# Run diagnostics to find broken configs or drift
+whatsloaded doctor
+
+# Measure how many tokens an MCP server costs in context
+whatsloaded measure github
 ```
 
-A local dashboard with an overview ("field of view"), per-kind inventories grouped by name, an MCP spectrum matrix, an inspector with variant diffs, Doctor and Backups. Press ⌘K for the command palette and `/` to filter. Every change opens a review dialog with the exact diff before anything is written, and the toast after applying has Undo.
+---
 
-**Exposure.** The server binds `127.0.0.1` only; there is deliberately no host option. To reach it from another machine, use an SSH local port-forward (`ssh -L 4319:127.0.0.1:4319 host`). It has no login: anything running as your user on this machine can reach it, the same as it can edit these files directly. Browser attacks on localhost are blocked: requests with a foreign `Host` (DNS rebinding) get 421, and writes need a same-origin `Origin` and a JSON body (CSRF). Plans are built and kept server-side, so the page can only apply a plan by id, never send file edits. Env/header values are redacted before they leave the process.
+## 🖥️ Three Ways to Use
 
-Develop the UI with hot reload: `npm run dev:api` and `npm run dev:web` (Vite on 127.0.0.1:5173, proxying `/api`).
+### 1. Web Dashboard (`whatsloaded ui`)
 
-## Change
+A fast, modern local dashboard with:
 
-| command                                           | what it does                                                                                                                                                                                                                                         |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enable` / `disable <query...>`                   | native flag where the harness has one (Kiro `disabled`, Codex `enabled`, opencode `enabled`, Claude `disabledMcpjsonServers`/`enabledPlugins`); otherwise the item is **parked** in `~/.whatsloaded/parked/` and restored on enable                  |
-| `rm <query...>`                                   | remove (files are moved into the backup, never deleted)                                                                                                                                                                                              |
-| `cp <query> <target...>`                          | copy an MCP server to other harnesses, translating formats; skills are **symlinked**                                                                                                                                                                 |
-| `mv <query> <target>`                             | copy + remove                                                                                                                                                                                                                                        |
-| `sync <name> --from <ref>`                        | rewrite your other configurations of a server to match one source, keeping each one's enabled state and harness-only fields (Kiro `autoApprove`, Codex timeouts, ...). Plugin entries are never touched; agent profiles only with `--include-agents` |
-| `adopt <skill>`                                   | move a harness-local skill into `~/.agents/skills` and leave a symlink, so every harness can share one copy                                                                                                                                          |
-| `add-mcp <name> --to <target...> -- <cmd> [args]` | add a new server to several harnesses at once (`--url`, `-e K=V`, `--header K=V`)                                                                                                                                                                    |
-| `backups` / `undo [id]`                           | every applied change set is reversible                                                                                                                                                                                                               |
+- **Matrix View**: Cross-tool grid showing where each MCP server and skill is defined.
+- **Inspector**: Detailed breakdown with syntax diffs between tools and secret masking.
+- **Safe Review Dialog**: Shows the exact diff before any file is touched, with a one-click Undo toast.
+- **Doctor View**: Surface shadowing, broken links, duplicate processes, and configuration drift.
 
-Every mutating command prints the plan with a diff and asks before writing. `-n/--dry-run` stops at the plan, `-y` skips the prompt, and `--force` is needed to touch items owned by plugins, enterprise policy or another tool (see Providers).
+### 2. Interactive Terminal UI (`whatsloaded tui`)
 
-### Queries and targets
+Prefer staying in the terminal? Run `whatsloaded tui` for an interactive, keyboard-driven browser:
 
-A **ref** names one item: `<harness>:<scope>[@owner]/<kind>/<name>`, e.g. `kiro:agent@reviewer/mcp/github`. Queries can be shorter (`github`, `git*`, `kiro/github`, `mcp/github`) and narrowed with `-H harness`, `-s scope`, `-k kind`. If a query matches more than one item, mutating commands refuse unless you pass `--all-matches`.
+- `↑` / `↓` to navigate
+- `Space` to toggle enable/disable
+- `Enter` to inspect details
+- `/` to live-filter items
 
-A **target** is `harness[:scope]`: `kiro`, `codex:user`, `claude:project`, `claude:local`.
+### 3. Command-Line Interface (`whatsloaded <command>`)
 
-Project and local scopes use the project detected from the current directory (nearest `.git`, `.mcp.json`, `.claude`, `.kiro`, ...). Override with `-C <dir>`, or use `-g` for user scope only.
+Scriptable, fast, and pipeable CLI for everyday terminal workflows.
 
-### Scopes per harness
+---
 
-| harness  | MCP servers                                                                                                                 | skills / content                                                       |
-| -------- | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| claude   | managed `managed-mcp.json` · user `~/.claude.json` · local `~/.claude.json projects[<path>]` · project `.mcp.json` · plugin | `~/.claude/{skills,agents,commands,rules}`, `.claude/...`, plugin dirs |
-| kiro     | user `~/.kiro/settings/mcp.json` · project `.kiro/settings/mcp.json` · agent (embedded in `agents/*.json`)                  | `{~,.}/.kiro/{skills,steering,agents}`                                 |
-| codex    | user `~/.codex/config.toml` · project `.codex/config.toml`                                                                  | `{~,.}/.codex/skills`; `[plugins]`                                     |
-| opencode | `~/.config/opencode/opencode.json[c]` · project `opencode.json[c]`                                                          | `skill/` or `skills/` dirs                                             |
-| agents   | n/a                                                                                                                         | `~/.agents/skills` (store) · `.agents/skills` (project)                |
+## 🚀 Common Commands & Workflows
 
-## Safety model
+### 🔍 Explore & Inspect
 
-- **Plans are transforms, not snapshots.** Each edit is re-run against the file as it is at apply time, because running agent sessions rewrite files like `~/.claude.json` between plan and apply.
-- **Minimal diffs.** JSON edits splice at syntax-tree offsets in the file's own style, so comments, key order and `"key" : value` spacing survive. TOML edits change only the affected lines, then the result is re-parsed and compared with the intended change; anything that doesn't match is refused.
-- **Backups.** Every apply writes `~/.whatsloaded/backups/<id>/manifest.json` and keeps the before-images. Removed paths are moved there too. `undo` replays a manifest in reverse.
-- **Ownership.** Plugin contents, enterprise policy and anything a provider claims as enforced need `--force`.
-- **Secrets.** `env` and header values are masked in `ls`, `show` and diffs unless you pass `--reveal`.
+| Command                            | What it does                                                        |
+| :--------------------------------- | :------------------------------------------------------------------ |
+| `whatsloaded ls`                   | List every configured MCP server, skill, agent, rule, and plugin.   |
+| `whatsloaded matrix`               | Grid view displaying which tools configure each server or skill.    |
+| `whatsloaded where <server>`       | See everywhere an MCP server is configured and which agents use it. |
+| `whatsloaded show <name>`          | Show complete configuration details (secrets masked by default).    |
+| `whatsloaded show <name> --reveal` | Show details with environment variables and headers unmasked.       |
 
-## Extending whatsloaded
+### 🩺 Health & Diagnostics
 
-Extensions are ES modules in `~/.whatsloaded/` that default-export a plain object. They run with your privileges, so whatsloaded refuses any file or directory that other users can write, lists what it loaded in `whatsloaded adapters`, and skips them all with `--no-extensions` (or `WHATSLOADED_NO_EXTENSIONS=1`). Types live in `whatsloaded/sdk`.
+```bash
+whatsloaded doctor
+```
 
-### Providers: who installed it
+Scans your entire environment and reports:
 
-A provider knows something no harness records, typically an organisation's own installer. It can claim items ("installed by Acme Sync"), mark them as enforced (changing them then needs `--force`), add plan warnings and doctor findings. Providers are read-only: they get helper functions and return data.
+- **Configuration Drift**: The same server configured differently across tools.
+- **Missing Commands**: MCP servers pointing to binaries that are not installed on your PATH.
+- **Orphaned References**: Agents configured to use servers they cannot access.
+- **Duplicate Processes**: Multiple configurations spawning redundant server processes.
+- **Unshared Skills**: Standalone skills that could be shared across tools via `whatsloaded adopt`.
+
+### 📏 Measure Context Overhead
+
+MCP tool schemas consume tokens _before you even send your first prompt_. Check their cost:
+
+```bash
+whatsloaded measure <server>
+```
+
+Starts the server safely once, reads its tool schemas, and calculates the exact tool count and context token footprint.
+
+### ✏️ Manage & Sync Configurations
+
+All modifying commands preview the exact plan and ask for confirmation before writing.
+
+```bash
+# Add a new MCP server to multiple tools at once
+whatsloaded add-mcp fetch --to claude kiro -- npx -y @modelcontextprotocol/server-fetch
+
+# Toggle servers or skills on/off
+whatsloaded disable github
+whatsloaded enable github
+
+# Share a tool-specific skill across all tools via ~/.agents/skills
+whatsloaded adopt my-skill
+
+# Sync a server configuration from one tool to your other tools
+whatsloaded sync github --from claude
+
+# Copy an MCP server or skill to another tool
+whatsloaded cp github kiro
+```
+
+### ⚡ Profiles & Usage Optimization
+
+Save what you actually use and switch profiles when starting a new workflow:
+
+```bash
+# Save only what was used in the last 30 days as a lightweight preset
+whatsloaded profile save lean --from claude --used
+
+# Apply that profile to another tool
+whatsloaded profile apply lean --to codex
+
+# List all saved profiles
+whatsloaded profile ls
+```
+
+### ↩️ Undo & Safety
+
+Every change is tracked in an atomic backup manifest:
+
+```bash
+# Revert the most recent change
+whatsloaded undo
+
+# View backup history
+whatsloaded backups
+```
+
+---
+
+## 🛡️ Safe by Design
+
+- **Transform-Based Planning**: Edits re-evaluate against current file state at apply time, so background agent sessions writing configs won't cause race conditions.
+- **Lossless AST Editing**: Edits splice at syntax-tree offsets; comments, indentation, key ordering, and whitespace are fully preserved.
+- **Atomic Operations**: Files are written via isolated temporary files and swapped atomically.
+- **Automatic Backups**: Before-images and manifests are saved to `~/.whatsloaded/backups/`. Any change can be reverted with `whatsloaded undo`.
+- **Zero Secrets Leaked**: Secrets in `env` and headers are masked by default in CLI output and web UI, and never leave your local machine.
+- **Loopback-Only Server**: The Web UI binds strictly to `127.0.0.1` with DNS rebinding protection and CSRF guards.
+
+---
+
+## 🗂️ Supported Harnesses & Scopes
+
+| Harness          | MCP Servers                                                                           | Skills, Prompts & Rules                                       |
+| :--------------- | :------------------------------------------------------------------------------------ | :------------------------------------------------------------ |
+| **Claude Code**  | Managed (`managed-mcp.json`), User (`~/.claude.json`), Project (`.mcp.json`), Plugins | `~/.claude/{skills,agents,commands,rules}`, `.claude/...`     |
+| **Codex CLI**    | User (`~/.codex/config.toml`), Project (`.codex/config.toml`)                         | `{~,.}/.codex/skills`, `[plugins]`                            |
+| **Kiro**         | User (`~/.kiro/settings/mcp.json`), Project, Agent-embedded                           | `{~,.}/.kiro/{skills,steering,agents}`                        |
+| **opencode**     | User (`~/.config/opencode/opencode.json[c]`), Project                                 | `skill/`, `skills/`                                           |
+| **Shared Store** | _N/A_                                                                                 | `~/.agents/skills` (Global store), `.agents/skills` (Project) |
+
+---
+
+## 🔌 Extending `whatsloaded`
+
+You can extend `whatsloaded` with custom adapters and providers by dropping standard ES modules into `~/.whatsloaded/`:
+
+- **`~/.whatsloaded/adapters/*.mjs`**: Teach `whatsloaded` how to read and manage configs for a new tool.
+- **`~/.whatsloaded/providers/*.mjs`**: Add installer attribution or custom enterprise policies.
+
+Types and helper functions are exported via `whatsloaded/sdk`:
 
 ```js
-// ~/.whatsloaded/providers/acme-sync.mjs
+// ~/.whatsloaded/providers/custom-installer.mjs
 export default {
-  id: 'acme-sync',
-  label: 'Acme Sync',
+  id: 'custom-installer',
+  label: 'Custom Installer',
   apiVersion: 1,
-  detect: (h) => h.exists(h.join(h.ctx.home, '.acme-sync')),
+  detect: (h) => h.exists(h.join(h.ctx.home, '.custom-installer')),
   claim(item) {
-    if (item.description?.includes('[acme-sync]')) {
-      return { by: 'Acme Sync', enforces: true, description: item.description.replace('[acme-sync]', '').trim() };
-    }
-    if (item.kind === 'plugin' && item.origin === 'acme-market') {
-      return { by: 'Acme Sync', note: 'Acme Sync may re-enable it on its next sync' };
+    if (item.description?.includes('[managed]')) {
+      return { by: 'Custom Installer', enforces: true };
     }
   },
 };
 ```
 
-Servers embedded in a claimed agent definition inherit the agent's owner.
+Run with `--no-extensions` at any time to bypass external extensions.
 
-### Adapters: a new harness
+---
 
-An adapter teaches whatsloaded a harness. Only `id`, `label`, `detect` and `discover` are required; anything else you leave out (enable/disable, remove, copy targets) is reported as unsupported. Adapters only _plan_: mutating methods return `Change[]`, and the engine handles preview, confirmation, backup and undo.
+## 🧑‍💻 Contributing & Development
 
-```js
-// ~/.whatsloaded/adapters/my-editor.mjs
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+```bash
+# Run test suite
+npm test
 
-const file = (ctx) => join(ctx.home, '.my-editor', 'mcp.json');
+# Typecheck and linting
+npm run typecheck
+npm run lint
 
-export default {
-  id: 'my-editor',
-  label: 'My Editor',
-  detect: (ctx) => existsSync(file(ctx)),
-  discover(ctx) {
-    const servers = JSON.parse(readFileSync(file(ctx), 'utf8')).mcpServers ?? {};
-    return {
-      problems: [],
-      items: Object.entries(servers).map(([name, s]) => ({
-        kind: 'mcp',
-        name,
-        enabled: !s.disabled,
-        scope: { harness: 'my-editor', level: 'user' },
-        location: { file: file(ctx), path: ['mcpServers', name] },
-        mcp: s.url ? { transport: 'http', url: s.url } : { transport: 'stdio', command: s.command, args: s.args, env: s.env },
-      })),
-    };
-  },
-};
+# Build CLI and Web dashboard
+npm run build
+
+# Run everything in CI mode
+npm run ci
 ```
 
-### Configuration
+---
 
-`~/.whatsloaded/config.json` (all optional):
+## 📄 License
 
-```json
-{ "compare": { "ignoreEnvKeys": ["*_KIRO"] } }
-```
-
-`compare.ignoreEnvKeys` lists env vars that are harness-specific by design, so differences in them never count as drift.
-
-## Known gaps
-
-- Copying agents, rules and commands between harnesses isn't supported, because their formats differ semantically. Only MCP servers and skills copy.
-- Codex servers written as inline tables (`mcp_servers.x = { ... }`) are reported but can't be edited. Overwriting a Codex server moves its table to the end of the file and drops comments inside that table.
-- Claude's `local` scope is keyed by the exact project path Claude was launched from.
-- Kiro powers and Cursor/Gemini are not covered yet (write an adapter).
-- Running agent sessions pick up changes on restart.
-
-## Develop
-
-```
-npm run ci          # lint (Biome) + typecheck (src, tests, web) + tests + build
-npm test            # vitest, against throwaway fake $HOME trees
-npm run fix         # apply formatting and safe lint fixes
-npm run dev -- ls   # run from source
-```
-
-CI also runs `scripts/check-terms.mjs`, which fails on terms listed in the `WHATSLOADED_TERMS` repository secret. The list itself is never committed.
+Apache-2.0
